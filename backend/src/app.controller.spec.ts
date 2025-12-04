@@ -1,22 +1,37 @@
+// src/app.controller.spec.ts
 import { Test, TestingModule } from '@nestjs/testing';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
+import { DataSource } from 'typeorm';
 
 describe('AppController', () => {
   let appController: AppController;
+  let dataSource: DataSource;
 
   beforeEach(async () => {
-    const app: TestingModule = await Test.createTestingModule({
+    const mockDataSource = {
+      query: jest.fn().mockResolvedValue([{ '?column?': 1 }]),
+    };
+
+    const module: TestingModule = await Test.createTestingModule({
       controllers: [AppController],
-      providers: [AppService],
+      providers: [
+        {
+          provide: DataSource,
+          useValue: mockDataSource,
+        },
+      ],
     }).compile();
 
-    appController = app.get<AppController>(AppController);
+    appController = module.get<AppController>(AppController);
+    dataSource = module.get<DataSource>(DataSource);
   });
 
-  describe('root', () => {
-    it('should return "Hello World!"', () => {
-      expect(appController.getHello()).toBe('Hello World!');
+  describe('db-health', () => {
+    it('should return health status "ok"', async () => {
+      const result = await appController.healthCheck();
+      expect(result).toHaveProperty('status', 'ok');
+      expect(result).toHaveProperty('timestamp');
+      expect((dataSource.query as jest.Mock).mock.calls.length).toBeGreaterThan(0);
     });
   });
 });
