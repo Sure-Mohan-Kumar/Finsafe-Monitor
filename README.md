@@ -1,2 +1,0 @@
-# Finsafe-Monitor
-TEST APP

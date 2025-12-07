@@ -51,13 +51,24 @@ export class TransactionsService {
 
     return { transaction: saved, fraud };
   }
-
+  
   async findAllForUser(userId: number): Promise<Transaction[]> {
     return this.txRepo.find({
       where: { user: { id: userId } },
       order: { timestamp: 'DESC' },
     });
   }
+  async findAll(userId?: number): Promise<Transaction[]> {
+    if (userId) {
+      return this.findAllForUser(userId);
+    }
+
+    return this.txRepo.find({
+      relations: ['user'],
+      order: { timestamp: 'DESC' },
+    });
+  }
+
 
   /**
    * Returns a simple risk summary for the user.
@@ -77,6 +88,7 @@ export class TransactionsService {
         lowRiskPercentage: 0,
       };
     }
+    
 
     // Re-evaluate each transaction against recent history (naive but fine for demo)
     let high = 0;
