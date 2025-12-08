@@ -17,4 +17,10 @@ export class AdminTransactionsController {
 
     return { items: transactions };
   }
+
+  @Get('stats')
+  async getGlobalStats() {
+    const stats = await this.transactionsService.getGlobalStats();
+    return stats;
+  }
 }
